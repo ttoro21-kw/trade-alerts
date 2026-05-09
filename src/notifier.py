@@ -186,9 +186,21 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict) -> Tuple[str
 </tr>""")
 
     subject = f"[일일 리포트] {today} — 6 종목 추세/신호"
-    html = f"""<html><body style="font-family:-apple-system,sans-serif; max-width:760px;">
+    # 데이터 stale 경고 배너
+stale_banner = ""
+stale_count = sum(1 for a in analyses if a.get("data_stale"))
+if stale_count > 0:
+    max_age = max((a.get("data_age_days", 0) for a in analyses), default=0)
+    stale_banner = f"""<div style="background:#fef3c7;border-left:4px solid #f59e0b;
+padding:10px 14px;margin:8px 0;color:#78350f;font-size:13px;">
+⚠️ <b>데이터 lag 경고</b>: yfinance에서 fetch한 종가가 직전 거래일 기준 {max_age}일 lag.
+{stale_count}/{len(analyses)} 종목이 stale. 실제 brokerage 가격과 차이 가능 — 다음 cron 실행 시 자동 갱신.
+</div>"""
+
+html = f"""<html><body style="font-family:-apple-system,sans-serif; max-width:760px;">
 <h2 style="margin-bottom:4px;">일일 추세/신호 리포트</h2>
 <p style="color:#666; margin-top:0;">발송일 {today} · 데이터 기준일 <b>{ref_close_date}</b> 종가</p>
+{stale_banner}
 
 <table style="border-collapse:collapse; width:100%; font-size:13px;">
 <thead style="background:#2c3e50; color:white;">

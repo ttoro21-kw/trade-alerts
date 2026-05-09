@@ -1,33 +1,29 @@
-"""
-일일 리포트 entry point — 장 마감 30분 후 (PT 1:30 PM).
+"""일일 리포트 entry point — 장 마감 30분 후 (PT 1:30 PM)."""
 
-전 종목 추세 상태, 신호 단계, 임계 가격을 종합한 이메일 발송.
-상태 변화가 있는 경우 highlight.
-"""
-
-import sys
+import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
-
 
 PT = ZoneInfo("America/Los_Angeles")
 
 
 def is_daily_window():
-    """PT 1:30 PM 전후 ±7분 윈도우 평일."""
     now = datetime.now(PT)
     if now.weekday() >= 5:
         return False, now
-    target_min = 13 * 60 + 30  # 1:30 PM
+    target_min = 13 * 60 + 30
     now_min = now.hour * 60 + now.minute
     return abs(now_min - target_min) <= 7, now
 
 
 def main():
+    force = os.environ.get("FORCE_RUN", "").lower() in ("1", "true", "yes")
     in_window, now = is_daily_window()
-    if not in_window:
+    if not in_window and not force:
         print(f"[skip] Not in 1:30 PM PT window: {now.strftime('%Y-%m-%d %H:%M %Z')}")
         return
+    if force:
+        print(f"[force] Running outside normal window: {now.strftime('%Y-%m-%d %H:%M %Z')}")
 
     from analyzer import analyze_ticker
     from notifier import send_email, render_daily_report

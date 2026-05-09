@@ -1,0 +1,46 @@
+name: Daily Report (1:30 PM PT)
+
+on:
+  schedule:
+    - cron: '30 20 * * 1-5'
+    - cron: '30 21 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate daily report
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          ALERT_RECIPIENT: ${{ secrets.ALERT_RECIPIENT }}
+          PYTHONPATH: src
+        run: python src/main_daily.py
+
+      - name: Commit state if changed
+        run: |
+          git config user.name "trade-alerts-bot"
+          git config user.email "bot@noreply.local"
+          git add state/ || true
+          if ! git diff --cached --quiet; then
+            git commit -m "[skip ci] daily state $(date -u +%Y%m%d)"
+            git push
+          else
+            echo "No state changes."
+          fi

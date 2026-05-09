@@ -1,22 +1,15 @@
-"""
-장중 모니터링 entry point.
+"""장중 모니터링 entry point. 매 10분, 2차/3차 신호 발생 시 즉시 알림."""
 
-GitHub Actions에서 10분마다 호출. 2차/3차 신호만 알림 (1차는 일일 리포트로).
-PT 6:30 AM - 1:00 PM 외에는 즉시 종료 (resource 절약).
-"""
-
-import sys
+import os
 from datetime import datetime
 from zoneinfo import ZoneInfo
-
 
 PT = ZoneInfo("America/Los_Angeles")
 
 
 def is_market_window():
-    """현재 PT 시간이 6:30 AM - 1:00 PM 평일인지 확인."""
     now = datetime.now(PT)
-    if now.weekday() >= 5:  # 토/일
+    if now.weekday() >= 5:
         return False, now
     market_open = now.replace(hour=6, minute=30, second=0, microsecond=0)
     market_close = now.replace(hour=13, minute=0, second=0, microsecond=0)
@@ -24,12 +17,14 @@ def is_market_window():
 
 
 def main():
+    force = os.environ.get("FORCE_RUN", "").lower() in ("1", "true", "yes")
     in_window, now = is_market_window()
-    if not in_window:
+    if not in_window and not force:
         print(f"[skip] Outside market window: {now.strftime('%Y-%m-%d %H:%M %Z')}")
         return
+    if force:
+        print(f"[force] Running outside normal window: {now.strftime('%Y-%m-%d %H:%M %Z')}")
 
-    # 시간 게이트 통과 후에만 무거운 import (start time 줄임)
     from analyzer import analyze_ticker
     from notifier import send_email, render_intraday_alert
     from state import (
@@ -52,7 +47,6 @@ def main():
         loss_tier = analysis.get("loss_tier")
         buy_tier = analysis.get("buy_tier")
 
-        # 손절 신호 (3차 우선)
         if loss_tier == "3rd_forced":
             sig = "3rd_forced"
             if not already_alerted_today(state, ticker, sig):
@@ -67,7 +61,6 @@ def main():
         elif loss_tier == "2nd_alert":
             sig = "2nd_alert_loss"
             if not already_alerted_today(state, ticker, sig):
-                # 2차는 confirmation 필터 1개 이상 충족 시에만 발송
                 if len(analysis["confirms_sell"]) >= 1:
                     subject, html = render_intraday_alert(analysis, sig)
                     try:
@@ -78,7 +71,6 @@ def main():
                     except Exception as e:
                         print(f"[email error] {ticker} {sig}: {e}")
 
-        # 매수 신호 (3차 우선)
         if buy_tier == "3rd_add":
             sig = "3rd_add"
             if not already_alerted_today(state, ticker, sig):

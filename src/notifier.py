@@ -1,4 +1,5 @@
 """이메일 알림 (Gmail SMTP).
+
 GMAIL_USER, GMAIL_APP_PASSWORD, ALERT_RECIPIENT 환경변수 필요.
 """
 
@@ -131,10 +132,21 @@ def render_intraday_alert(analysis: Dict, signal_type: str) -> Tuple[str, str]:
 def render_daily_report(analyses: List[Dict], status_changes: Dict) -> Tuple[str, str]:
     today = datetime.now().strftime("%Y-%m-%d")
 
-    # 대표 close date 추출 (모든 종목 동일하게 가장 최근 거래일)
     ref_close_date = ""
     if analyses:
         ref_close_date = analyses[0].get("last_close_date", "")
+
+    stale_banner = ""
+    stale_count = sum(1 for a in analyses if a.get("data_stale"))
+    if stale_count > 0:
+        max_age = max((a.get("data_age_days", 0) for a in analyses), default=0)
+        stale_banner = (
+            '<div style="background:#fef3c7;border-left:4px solid #f59e0b;'
+            'padding:10px 14px;margin:8px 0;color:#78350f;font-size:13px;">'
+            f'⚠️ <b>데이터 lag 경고</b>: yfinance에서 fetch한 종가가 직전 거래일 대비 {max_age}일 lag. '
+            f'{stale_count}/{len(analyses)} 종목이 stale. 실제 brokerage 가격과 차이 가능 — '
+            '다음 cron 실행 시 자동 갱신.</div>'
+        )
 
     rows = []
     for a in analyses:
@@ -186,18 +198,7 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict) -> Tuple[str
 </tr>""")
 
     subject = f"[일일 리포트] {today} — 6 종목 추세/신호"
-    # 데이터 stale 경고 배너
-stale_banner = ""
-stale_count = sum(1 for a in analyses if a.get("data_stale"))
-if stale_count > 0:
-    max_age = max((a.get("data_age_days", 0) for a in analyses), default=0)
-    stale_banner = f"""<div style="background:#fef3c7;border-left:4px solid #f59e0b;
-padding:10px 14px;margin:8px 0;color:#78350f;font-size:13px;">
-⚠️ <b>데이터 lag 경고</b>: yfinance에서 fetch한 종가가 직전 거래일 기준 {max_age}일 lag.
-{stale_count}/{len(analyses)} 종목이 stale. 실제 brokerage 가격과 차이 가능 — 다음 cron 실행 시 자동 갱신.
-</div>"""
-
-html = f"""<html><body style="font-family:-apple-system,sans-serif; max-width:760px;">
+    html = f"""<html><body style="font-family:-apple-system,sans-serif; max-width:760px;">
 <h2 style="margin-bottom:4px;">일일 추세/신호 리포트</h2>
 <p style="color:#666; margin-top:0;">발송일 {today} · 데이터 기준일 <b>{ref_close_date}</b> 종가</p>
 {stale_banner}
@@ -240,7 +241,7 @@ html = f"""<html><body style="font-family:-apple-system,sans-serif; max-width:76
 
 <p style="color:#888;font-size:11px;margin-top:24px;">
 모든 가격은 raw 종가 기준 (5일 EMA smoothing 미적용 — brokerage 화면과 일치).
-추세 분류는 5일 EMA 기반으로 방향 smoother하게 read (rising/falling/sideways 등).
+추세 분류는 5일 EMA 기반으로 방향 smoother하게 read.
 2차/3차 신호는 거래량/DI cross/EMA cross 확인 필터 거쳐 발송 → noise 자동 차단.
 </p>
 </body></html>"""

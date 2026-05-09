@@ -186,15 +186,23 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict) -> Tuple[str
     threshold_rows = []
     for a in analyses:
         t = a["thresholds"]
+        peak = a['peak']
+        trough = a['trough']
+        sw_pct = (t['stop_watch'] - peak) / peak * 100
+        sa_pct = (t['stop_alert'] - peak) / peak * 100
+        sf_pct = (t['stop_forced'] - peak) / peak * 100
+        bw_pct = (t['buy_watch'] - trough) / trough * 100
+        ba_pct = (t['buy_alert'] - trough) / trough * 100
+        bd_pct = (t['buy_add'] - trough) / trough * 100
         threshold_rows.append(f"""
 <tr>
   <td style="padding:4px 8px;border-bottom:1px solid #eee;"><b>{a['ticker']}</b></td>
-  <td style="padding:4px 8px;border-bottom:1px solid #eee;">${t['stop_watch']:.2f}</td>
-  <td style="padding:4px 8px;border-bottom:1px solid #eee;color:#e67e22;">${t['stop_alert']:.2f}</td>
-  <td style="padding:4px 8px;border-bottom:1px solid #eee;color:#c0392b;"><b>${t['stop_forced']:.2f}</b></td>
-  <td style="padding:4px 8px;border-bottom:1px solid #eee;">${t['buy_watch']:.2f}</td>
-  <td style="padding:4px 8px;border-bottom:1px solid #eee;color:#16a085;">${t['buy_alert']:.2f}</td>
-  <td style="padding:4px 8px;border-bottom:1px solid #eee;color:#27ae60;"><b>${t['buy_add']:.2f}</b></td>
+  <td style="padding:4px 8px;border-bottom:1px solid #eee;">${t['stop_watch']:.2f}<br><span style='font-size:10px;color:#888;'>{sw_pct:+.1f}%</span></td>
+  <td style="padding:4px 8px;border-bottom:1px solid #eee;color:#e67e22;">${t['stop_alert']:.2f}<br><span style='font-size:10px;color:#888;'>{sa_pct:+.1f}%</span></td>
+  <td style="padding:4px 8px;border-bottom:1px solid #eee;color:#c0392b;"><b>${t['stop_forced']:.2f}</b><br><span style='font-size:10px;color:#888;'>{sf_pct:+.1f}%</span></td>
+  <td style="padding:4px 8px;border-bottom:1px solid #eee;">${t['buy_watch']:.2f}<br><span style='font-size:10px;color:#888;'>{bw_pct:+.1f}%</span></td>
+  <td style="padding:4px 8px;border-bottom:1px solid #eee;color:#16a085;">${t['buy_alert']:.2f}<br><span style='font-size:10px;color:#888;'>{ba_pct:+.1f}%</span></td>
+  <td style="padding:4px 8px;border-bottom:1px solid #eee;color:#27ae60;"><b>${t['buy_add']:.2f}</b><br><span style='font-size:10px;color:#888;'>{bd_pct:+.1f}%</span></td>
 </tr>""")
 
     subject = f"[일일 리포트] {today} — 6 종목 추세/신호"

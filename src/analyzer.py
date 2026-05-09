@@ -1,14 +1,17 @@
 """Core analysis: 추세 분류 + signal tier computation.
 
 Display 및 tier 결정은 raw 종가 기준 (사용자 brokerage 화면과 일치).
-추세 분류 (rising/falling/sideways)는 5일 EMA 사용 (방향성 smoother).
-Confirmation 필터에 5d/20d EMA cross 포함 → noise 제거.
+추세 분류는 5일 EMA 사용 (방향성 smoother).
+데이터 신선도 검증 포함.
 """
+
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+from typing import Dict, Tuple
 
 import pandas as pd
 import numpy as np
 import yfinance as yf
-from typing import Dict, Tuple
 
 from thresholds import (
     TICKER_CONFIG,
@@ -18,6 +21,9 @@ from thresholds import (
     VOLUME_SURGE_THRESHOLD,
     ADX_TREND_THRESHOLD,
 )
+
+PT = ZoneInfo("America/Los_Angeles")
+ET = ZoneInfo("America/New_York")
 
 
 def fetch_data(ticker: str, period: str = "6mo", interval: str = "1d") -> pd.DataFrame:
@@ -61,7 +67,6 @@ def compute_adx(df: pd.DataFrame, period: int = 14):
 
 
 def classify_trend(df: pd.DataFrame, ticker: str) -> Dict:
-    """5-state 추세 분류. EMA 기반 — 방향 smooth하게 읽기."""
     cfg = TICKER_CONFIG[ticker]
     close_ema = df['Close'].ewm(span=EMA_SMOOTHING_DAYS, adjust=False).mean()
 
@@ -131,7 +136,6 @@ def classify_trend(df: pd.DataFrame, ticker: str) -> Dict:
 
 
 def compute_peak_trough(df: pd.DataFrame) -> Tuple[float, float, str, str]:
-    """최근 PEAK_TROUGH_LOOKBACK_DAYS 거래일 동안의 raw 종가 기준 고점/저점."""
     close = df['Close']
     recent = close.tail(PEAK_TROUGH_LOOKBACK_DAYS)
     return (
@@ -143,7 +147,6 @@ def compute_peak_trough(df: pd.DataFrame) -> Tuple[float, float, str, str]:
 
 
 def compute_signals(df: pd.DataFrame, ticker: str) -> Dict:
-    """현재가, 거리%, 신호 단계 모두 raw 종가 기준."""
     cfg = TICKER_CONFIG[ticker]
     close = df['Close']
 
@@ -154,22 +157,18 @@ def compute_signals(df: pd.DataFrame, ticker: str) -> Dict:
     dist_from_peak_pct = (last_close - peak) / peak * 100
     dist_from_trough_pct = (last_close - trough) / trough * 100
 
-    # 거래량 surge
     vol_5d_avg = df['Volume'].tail(5).mean()
     vol_20d_avg = df['Volume'].tail(20).mean()
     vol_ratio = float(vol_5d_avg / vol_20d_avg) if vol_20d_avg > 0 else 1.0
 
-    # 5d EMA vs 20d EMA cross — 확인 필터
     ema5 = float(close.ewm(span=5, adjust=False).mean().iloc[-1])
     ema20 = float(close.ewm(span=20, adjust=False).mean().iloc[-1])
     ema5_above_20 = ema5 > ema20
 
-    # ADX components
     _, plus_di, minus_di = compute_adx(df)
     plus_di_now = float(plus_di.iloc[-1]) if not pd.isna(plus_di.iloc[-1]) else 0.0
     minus_di_now = float(minus_di.iloc[-1]) if not pd.isna(minus_di.iloc[-1]) else 0.0
 
-    # Tier 결정 — raw 종가 거리% 기준 (이메일 표시값과 일치)
     ts = cfg["trailing_stop"]
     loss_tier = None
     if dist_from_peak_pct <= ts["forced_pct"]:
@@ -240,15 +239,10 @@ def analyze_ticker(ticker: str) -> Dict:
     signals = compute_signals(df, ticker)
     signals["trend"] = trend
 
-    # 데이터 신선도 검증 — fetch한 last close가 너무 오래됐으면 stale 표시
-    from datetime import datetime, timedelta
-    from zoneinfo import ZoneInfo
-    PT = ZoneInfo("America/Los_Angeles")
     last_dt = df.index[-1].to_pydatetime()
     if last_dt.tzinfo is None:
-        last_dt = last_dt.replace(tzinfo=ZoneInfo("America/New_York"))
+        last_dt = last_dt.replace(tzinfo=ET)
     now_pt = datetime.now(PT)
-    # 직전 평일 (토/일이면 금요일) 기준
     expected_date = now_pt.date()
     while expected_date.weekday() >= 5:
         expected_date -= timedelta(days=1)

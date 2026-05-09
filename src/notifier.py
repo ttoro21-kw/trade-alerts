@@ -234,12 +234,12 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict) -> Tuple[str
 <thead style="background:#34495e; color:white;">
 <tr>
   <th style="padding:6px 8px;text-align:left;">종목</th>
-  <th style="padding:6px 8px;text-align:left;">손절 1차</th>
-  <th style="padding:6px 8px;text-align:left;">손절 2차</th>
-  <th style="padding:6px 8px;text-align:left;">손절 3차</th>
-  <th style="padding:6px 8px;text-align:left;">매수 1차</th>
-  <th style="padding:6px 8px;text-align:left;">매수 2차</th>
-  <th style="padding:6px 8px;text-align:left;">매수 3차</th>
+<th style="padding:6px 8px;text-align:left;">손절 1차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(고점대비)</span></th>
+  <th style="padding:6px 8px;text-align:left;">손절 2차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(고점대비)</span></th>
+  <th style="padding:6px 8px;text-align:left;">손절 3차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(고점대비)</span></th>
+  <th style="padding:6px 8px;text-align:left;">매수 1차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(저점대비)</span></th>
+  <th style="padding:6px 8px;text-align:left;">매수 2차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(저점대비)</span></th>
+  <th style="padding:6px 8px;text-align:left;">매수 3차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(저점대비)</span></th>
 </tr>
 </thead>
 <tbody>

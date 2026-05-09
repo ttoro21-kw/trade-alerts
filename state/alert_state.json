@@ -1,5 +1,12 @@
 {
-  "last_run": null,
+  "last_run": "2026-05-09T00:13:04.997703-07:00",
   "alerts_sent": {},
-  "last_status": {}
+  "last_status": {
+    "ASML": "fall_then_rise",
+    "AMAT": "fall_then_rise",
+    "LRCX": "fall_then_rise",
+    "NVDA": "fall_then_rise",
+    "TQQQ": "fall_then_rise",
+    "SOXL": "fall_then_rise"
+  }
 }

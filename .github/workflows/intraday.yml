@@ -5,6 +5,11 @@ on:
     - cron: '*/10 13-20 * * 1-5'
     - cron: '0,10 21 * * 1-5'
   workflow_dispatch:
+    inputs:
+      force_run:
+        description: '시간 게이트 무시하고 강제 실행 (테스트용)'
+        type: boolean
+        default: false
 
 jobs:
   intraday:
@@ -31,6 +36,7 @@ jobs:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           ALERT_RECIPIENT: ${{ secrets.ALERT_RECIPIENT }}
           PYTHONPATH: src
+          FORCE_RUN: ${{ inputs.force_run }}
         run: python src/main_intraday.py
 
       - name: Commit state if changed

@@ -239,4 +239,21 @@ def analyze_ticker(ticker: str) -> Dict:
     trend = classify_trend(df, ticker)
     signals = compute_signals(df, ticker)
     signals["trend"] = trend
+
+    # 데이터 신선도 검증 — fetch한 last close가 너무 오래됐으면 stale 표시
+    from datetime import datetime, timedelta
+    from zoneinfo import ZoneInfo
+    PT = ZoneInfo("America/Los_Angeles")
+    last_dt = df.index[-1].to_pydatetime()
+    if last_dt.tzinfo is None:
+        last_dt = last_dt.replace(tzinfo=ZoneInfo("America/New_York"))
+    now_pt = datetime.now(PT)
+    # 직전 평일 (토/일이면 금요일) 기준
+    expected_date = now_pt.date()
+    while expected_date.weekday() >= 5:
+        expected_date -= timedelta(days=1)
+    age_days = (expected_date - last_dt.date()).days
+    signals["data_stale"] = age_days >= 1
+    signals["data_age_days"] = age_days
+
     return signals

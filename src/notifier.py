@@ -221,6 +221,7 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict) -> Tuple[str
   <th style="padding:8px;text-align:left;">저점/일자/대비</th>
   <th style="padding:8px;text-align:left;">손절 단계</th>
   <th style="padding:8px;text-align:left;">매수 단계</th>
+  <th style="padding:8px;text-align:left;">거래량<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(5d/20d)</span></th>
   <th style="padding:8px;text-align:left;">ADX</th>
 </tr>
 </thead>

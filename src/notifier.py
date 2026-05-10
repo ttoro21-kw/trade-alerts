@@ -171,8 +171,7 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict) -> Tuple[str
         peak_date = a.get("peak_date", "")
         trough_date = a.get("trough_date", "")
 
-vol_ratio = a.get('vol_ratio', 1.0)
-        # 거래량 surge 색상: 1.30 이상이면 초록 (강한 신호), 1.0 미만이면 회색
+        vol_ratio = a.get('vol_ratio', 1.0)
         if vol_ratio >= 1.30:
             vol_color = "#27ae60"
             vol_emoji = "🔥"
@@ -185,6 +184,7 @@ vol_ratio = a.get('vol_ratio', 1.0)
         else:
             vol_color = "#666"
             vol_emoji = ""
+
         rows.append(f"""
 <tr>
   <td style="padding:6px 8px;border-bottom:1px solid #eee;"><b>{ticker}</b></td>
@@ -250,7 +250,7 @@ vol_ratio = a.get('vol_ratio', 1.0)
 <thead style="background:#34495e; color:white;">
 <tr>
   <th style="padding:6px 8px;text-align:left;">종목</th>
-<th style="padding:6px 8px;text-align:left;">손절 1차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(고점대비)</span></th>
+  <th style="padding:6px 8px;text-align:left;">손절 1차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(고점대비)</span></th>
   <th style="padding:6px 8px;text-align:left;">손절 2차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(고점대비)</span></th>
   <th style="padding:6px 8px;text-align:left;">손절 3차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(고점대비)</span></th>
   <th style="padding:6px 8px;text-align:left;">매수 1차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(저점대비)</span></th>
@@ -267,6 +267,7 @@ vol_ratio = a.get('vol_ratio', 1.0)
 모든 가격은 raw 종가 기준 (5일 EMA smoothing 미적용 — brokerage 화면과 일치).
 추세 분류는 5일 EMA 기반으로 방향 smoother하게 read.
 2차/3차 신호는 거래량/DI cross/EMA cross 확인 필터 거쳐 발송 → noise 자동 차단.
+거래량 1.30× 이상이면 confirmation 필터의 volume_surge 충족.
 </p>
 </body></html>"""
     return subject, html

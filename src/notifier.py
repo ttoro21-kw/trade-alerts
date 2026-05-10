@@ -171,6 +171,20 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict) -> Tuple[str
         peak_date = a.get("peak_date", "")
         trough_date = a.get("trough_date", "")
 
+vol_ratio = a.get('vol_ratio', 1.0)
+        # 거래량 surge 색상: 1.30 이상이면 초록 (강한 신호), 1.0 미만이면 회색
+        if vol_ratio >= 1.30:
+            vol_color = "#27ae60"
+            vol_emoji = "🔥"
+        elif vol_ratio >= 1.10:
+            vol_color = "#16a085"
+            vol_emoji = "↑"
+        elif vol_ratio < 0.80:
+            vol_color = "#888"
+            vol_emoji = "↓"
+        else:
+            vol_color = "#666"
+            vol_emoji = ""
         rows.append(f"""
 <tr>
   <td style="padding:6px 8px;border-bottom:1px solid #eee;"><b>{ticker}</b></td>
@@ -180,6 +194,7 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict) -> Tuple[str
   <td style="padding:6px 8px;border-bottom:1px solid #eee;">${a['trough']:.2f}<br><span style='font-size:10px;color:#888;'>{trough_date} / {a['dist_from_trough_pct']:+.1f}%</span></td>
   <td style="padding:6px 8px;border-bottom:1px solid #eee;">{loss_label}</td>
   <td style="padding:6px 8px;border-bottom:1px solid #eee;">{buy_label}</td>
+  <td style="padding:6px 8px;border-bottom:1px solid #eee;color:{vol_color};"><b>{vol_ratio:.2f}×</b> {vol_emoji}</td>
   <td style="padding:6px 8px;border-bottom:1px solid #eee;">{trend.get('adx', 0):.1f}</td>
 </tr>""")
 

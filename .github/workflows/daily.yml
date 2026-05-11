@@ -1,7 +1,14 @@
-name: Daily Report (1:30 PM PT)
+name: Daily Report (3x per day PT)
 
 on:
   schedule:
+    # 8 AM PT — PDT: 15:00 UTC,  PST: 16:00 UTC
+    - cron: '0 15 * * 1-5'
+    - cron: '0 16 * * 1-5'
+    # 11 AM PT — PDT: 18:00 UTC,  PST: 19:00 UTC
+    - cron: '0 18 * * 1-5'
+    - cron: '0 19 * * 1-5'
+    # 1:30 PM PT — PDT: 20:30 UTC,  PST: 21:30 UTC
     - cron: '30 20 * * 1-5'
     - cron: '30 21 * * 1-5'
   workflow_dispatch:
@@ -45,7 +52,7 @@ jobs:
           git config user.email "bot@noreply.local"
           git add state/ || true
           if ! git diff --cached --quiet; then
-            git commit -m "[skip ci] daily state $(date -u +%Y%m%d)"
+            git commit -m "[skip ci] daily state $(date -u +%Y%m%d-%H%M)"
             git push
           else
             echo "No state changes."

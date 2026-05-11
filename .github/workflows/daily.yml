@@ -3,11 +3,8 @@ name: Daily Report (3x per day PT)
 on:
   schedule:
     - cron: '0 15 * * 1-5'
-    - cron: '0 16 * * 1-5'
     - cron: '0 18 * * 1-5'
-    - cron: '0 19 * * 1-5'
     - cron: '30 20 * * 1-5'
-    - cron: '30 21 * * 1-5'
   workflow_dispatch:
     inputs:
       force_run:

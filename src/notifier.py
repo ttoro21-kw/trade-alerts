@@ -31,11 +31,13 @@ LOSS_TIER_LABEL = {
     "1st_watch": "🟢 1차 관찰",
     "2nd_alert": "🟡 2차 손절",
     "3rd_forced": "🔴 3차 강제",
+    "late_exit": "⚫ 매도 늦음",
 }
 BUY_TIER_LABEL = {
     "1st_watch": "🟢 1차 관찰",
     "2nd_alert": "🟡 2차 매수",
     "3rd_add": "🔴 3차 추가",
+    "late_entry": "⚫ 진입 늦음",
 }
 
 
@@ -168,8 +170,13 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict, window_label
         buy_tier = a.get("buy_tier") or "—"
         loss_label = LOSS_TIER_LABEL.get(loss_tier, "—")
         buy_label = BUY_TIER_LABEL.get(buy_tier, "—")
+
         peak_date = a.get("peak_date", "")
-        trough_date = a.get("trough_date", "")
+        trough_40d_date = a.get("trough_40d_date", a.get("trough_date", ""))
+        trough_20d_date = a.get("trough_20d_date", "")
+        dist_peak = a.get("dist_from_peak_pct", 0)
+        dist_trough_40d = a.get("dist_from_trough_40d_pct", a.get("dist_from_trough_pct", 0))
+        dist_trough_20d = a.get("dist_from_trough_20d_pct", 0)
 
         vol_ratio = a.get('vol_ratio', 1.0)
         if vol_ratio >= 1.30:
@@ -190,8 +197,9 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict, window_label
   <td style="padding:6px 8px;border-bottom:1px solid #eee;"><b>{ticker}</b></td>
   <td style="padding:6px 8px;border-bottom:1px solid #eee;">${a['current_price']:.2f}</td>
   <td style="padding:6px 8px;border-bottom:1px solid #eee;">{emoji} {status_ko}{change_marker}</td>
-  <td style="padding:6px 8px;border-bottom:1px solid #eee;">${a['peak']:.2f}<br><span style='font-size:10px;color:#888;'>{peak_date} / {a['dist_from_peak_pct']:+.1f}%</span></td>
-  <td style="padding:6px 8px;border-bottom:1px solid #eee;">${a['trough']:.2f}<br><span style='font-size:10px;color:#888;'>{trough_date} / {a['dist_from_trough_pct']:+.1f}%</span></td>
+  <td style="padding:6px 8px;border-bottom:1px solid #eee;">${a['peak']:.2f}<br><span style='font-size:10px;color:#888;'>{peak_date} / {dist_peak:+.1f}%</span></td>
+  <td style="padding:6px 8px;border-bottom:1px solid #eee;">${a['trough_40d']:.2f}<br><span style='font-size:10px;color:#888;'>{trough_40d_date} / {dist_trough_40d:+.1f}%</span></td>
+  <td style="padding:6px 8px;border-bottom:1px solid #eee;background:#f5f5f5;">${a['trough_20d']:.2f}<br><span style='font-size:10px;color:#888;'>{trough_20d_date} / {dist_trough_20d:+.1f}%</span></td>
   <td style="padding:6px 8px;border-bottom:1px solid #eee;">{loss_label}</td>
   <td style="padding:6px 8px;border-bottom:1px solid #eee;">{buy_label}</td>
   <td style="padding:6px 8px;border-bottom:1px solid #eee;color:{vol_color};"><b>{vol_ratio:.2f}×</b> {vol_emoji}</td>
@@ -202,7 +210,7 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict, window_label
     for a in analyses:
         t = a["thresholds"]
         peak = a['peak']
-        trough = a['trough']
+        trough = a.get('trough_40d', a['trough'])
         sw_pct = (t['stop_watch'] - peak) / peak * 100
         sa_pct = (t['stop_alert'] - peak) / peak * 100
         sf_pct = (t['stop_forced'] - peak) / peak * 100
@@ -236,7 +244,7 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict, window_label
 
     header_window_label = f'<span style="color:#3498db;font-size:14px;"> — {window_label}</span>' if window_label else ''
 
-    html = f"""<html><body style="font-family:-apple-system,sans-serif; max-width:760px;">
+    html = f"""<html><body style="font-family:-apple-system,sans-serif; max-width:880px;">
 <h2 style="margin-bottom:4px;">일일 추세/신호 리포트{header_window_label}</h2>
 <p style="color:#666; margin-top:0;">발송일 {today} · 데이터 기준일 <b>{ref_close_date}</b> 종가</p>
 {stale_banner}
@@ -247,8 +255,9 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict, window_label
   <th style="padding:8px;text-align:left;">종목</th>
   <th style="padding:8px;text-align:left;">종가</th>
   <th style="padding:8px;text-align:left;">추세</th>
-  <th style="padding:8px;text-align:left;">고점/일자/대비</th>
-  <th style="padding:8px;text-align:left;">저점/일자/대비</th>
+  <th style="padding:8px;text-align:left;">고점 (40일)<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>일자/대비</span></th>
+  <th style="padding:8px;text-align:left;">저점 (40일)<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>일자/대비</span></th>
+  <th style="padding:8px;text-align:left;background:#34495e;">저점 (20일)<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>일자/대비 (참고)</span></th>
   <th style="padding:8px;text-align:left;">손절 단계</th>
   <th style="padding:8px;text-align:left;">매수 단계</th>
   <th style="padding:8px;text-align:left;">거래량<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(5d/20d)</span></th>
@@ -268,9 +277,9 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict, window_label
   <th style="padding:6px 8px;text-align:left;">손절 1차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(고점대비)</span></th>
   <th style="padding:6px 8px;text-align:left;">손절 2차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(고점대비)</span></th>
   <th style="padding:6px 8px;text-align:left;">손절 3차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(고점대비)</span></th>
-  <th style="padding:6px 8px;text-align:left;">매수 1차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(저점대비)</span></th>
-  <th style="padding:6px 8px;text-align:left;">매수 2차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(저점대비)</span></th>
-  <th style="padding:6px 8px;text-align:left;">매수 3차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(저점대비)</span></th>
+  <th style="padding:6px 8px;text-align:left;">매수 1차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(40일 저점대비)</span></th>
+  <th style="padding:6px 8px;text-align:left;">매수 2차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(40일 저점대비)</span></th>
+  <th style="padding:6px 8px;text-align:left;">매수 3차<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(40일 저점대비)</span></th>
 </tr>
 </thead>
 <tbody>
@@ -278,9 +287,17 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict, window_label
 </tbody>
 </table>
 
-<p style="color:#888;font-size:11px;margin-top:24px;">
-모든 가격은 raw 종가 기준 (5일 EMA smoothing 미적용 — brokerage 화면과 일치).
-추세 분류는 5일 EMA 기반으로 방향 smoother하게 read.
+<div style="background:#f0f8ff;border-left:4px solid #3498db;padding:10px 14px;margin-top:24px;font-size:12px;color:#2c3e50;">
+<b>표 해석 가이드</b><br>
+- <b>저점 (40일)</b>: 시장 사이클 전체 관점 — 매수/손절 <b>단계 결정 기준</b><br>
+- <b>저점 (20일)</b>: 최근 swing 관점 — 단기 진입 기회 <b>참고용</b> (단계에 영향 X)<br>
+- <b>⚫ 진입 늦음</b>: 40일 저점 대비 이미 너무 올랐거나 (×{2}) rising 추세 진입 → 신규 매수 부적합<br>
+- <b>⚫ 매도 늦음</b>: 40일 고점 대비 이미 너무 떨어졌거나 falling 추세 진입 → 손절 의미 약함<br>
+- 20일 저점 대비 거리%가 작으면 단기 swing trader는 추가 진입 검토 가능
+</div>
+
+<p style="color:#888;font-size:11px;margin-top:16px;">
+모든 가격은 raw 종가 기준 (brokerage 화면과 일치). 추세 분류는 5일 EMA 기반.
 2차/3차 신호는 거래량/DI cross/EMA cross 확인 필터 거쳐 발송 → noise 자동 차단.
 거래량 1.30× 이상이면 confirmation 필터의 volume_surge 충족.
 </p>

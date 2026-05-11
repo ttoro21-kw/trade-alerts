@@ -1,8 +1,6 @@
 """Core analysis: 추세 분류 + signal tier computation.
 
-Display 및 tier 결정은 raw 종가 기준 (사용자 brokerage 화면과 일치).
-추세 분류는 5일 EMA 사용 (방향성 smoother).
-데이터 신선도 검증 포함.
+시나리오 C: 두 lookback 저점 모두 계산. 단계는 40일 기준.
 """
 
 from datetime import datetime, timedelta
@@ -16,10 +14,15 @@ import yfinance as yf
 from thresholds import (
     TICKER_CONFIG,
     PEAK_TROUGH_LOOKBACK_DAYS,
+    TROUGH_INFO_LOOKBACK_DAYS,
     TREND_LOOKBACK_DAYS,
     EMA_SMOOTHING_DAYS,
     VOLUME_SURGE_THRESHOLD,
     ADX_TREND_THRESHOLD,
+    LATE_ENTRY_MULTIPLIER,
+    LATE_EXIT_MULTIPLIER,
+    SUPPRESS_BUY_ON_TRENDS,
+    SUPPRESS_SELL_ON_TRENDS,
 )
 
 PT = ZoneInfo("America/Los_Angeles")
@@ -135,27 +138,38 @@ def classify_trend(df: pd.DataFrame, ticker: str) -> Dict:
     }
 
 
-def compute_peak_trough(df: pd.DataFrame) -> Tuple[float, float, str, str]:
+def compute_peak_trough(df: pd.DataFrame) -> Dict:
+    """40일 윈도우 (메인) + 20일 윈도우 (정보용) 모두 계산."""
     close = df['Close']
-    recent = close.tail(PEAK_TROUGH_LOOKBACK_DAYS)
-    return (
-        float(recent.max()),
-        float(recent.min()),
-        str(recent.idxmax().date()),
-        str(recent.idxmin().date()),
-    )
+
+    peak_window_40 = close.tail(PEAK_TROUGH_LOOKBACK_DAYS)
+    trough_window_20 = close.tail(TROUGH_INFO_LOOKBACK_DAYS)
+
+    return {
+        "peak_40d": float(peak_window_40.max()),
+        "peak_40d_date": str(peak_window_40.idxmax().date()),
+        "trough_40d": float(peak_window_40.min()),
+        "trough_40d_date": str(peak_window_40.idxmin().date()),
+        "trough_20d": float(trough_window_20.min()),
+        "trough_20d_date": str(trough_window_20.idxmin().date()),
+    }
 
 
-def compute_signals(df: pd.DataFrame, ticker: str) -> Dict:
+def compute_signals(df: pd.DataFrame, ticker: str, trend: Dict) -> Dict:
     cfg = TICKER_CONFIG[ticker]
     close = df['Close']
 
     last_close = float(close.iloc[-1])
     last_close_date = str(close.index[-1].date())
 
-    peak, trough, peak_date, trough_date = compute_peak_trough(df)
+    pt = compute_peak_trough(df)
+    peak = pt["peak_40d"]
+    trough_40d = pt["trough_40d"]
+    trough_20d = pt["trough_20d"]
+
     dist_from_peak_pct = (last_close - peak) / peak * 100
-    dist_from_trough_pct = (last_close - trough) / trough * 100
+    dist_from_trough_40d_pct = (last_close - trough_40d) / trough_40d * 100
+    dist_from_trough_20d_pct = (last_close - trough_20d) / trough_20d * 100
 
     vol_5d_avg = df['Volume'].tail(5).mean()
     vol_20d_avg = df['Volume'].tail(20).mean()
@@ -169,23 +183,42 @@ def compute_signals(df: pd.DataFrame, ticker: str) -> Dict:
     plus_di_now = float(plus_di.iloc[-1]) if not pd.isna(plus_di.iloc[-1]) else 0.0
     minus_di_now = float(minus_di.iloc[-1]) if not pd.isna(minus_di.iloc[-1]) else 0.0
 
+    # 매수 단계 결정 — 40일 저점 기준
+    tb = cfg["trailing_buy"]
+    trend_status = trend.get("status", "")
+
+    # 옵션 C' + C'' 적용
+    late_entry = (
+        dist_from_trough_40d_pct > tb["add_pct"] * LATE_ENTRY_MULTIPLIER
+        or trend_status in SUPPRESS_BUY_ON_TRENDS
+    )
+
+    buy_tier = None
+    if late_entry:
+        buy_tier = "late_entry"
+    elif dist_from_trough_40d_pct >= tb["add_pct"]:
+        buy_tier = "3rd_add"
+    elif dist_from_trough_40d_pct >= tb["alert_pct"]:
+        buy_tier = "2nd_alert"
+    elif dist_from_trough_40d_pct >= tb["watch_pct"]:
+        buy_tier = "1st_watch"
+
+    # 손절 단계 결정 — 40일 고점 기준 + 옵션 C' + C''
     ts = cfg["trailing_stop"]
+    late_exit = (
+        dist_from_peak_pct < ts["forced_pct"] * LATE_EXIT_MULTIPLIER
+        or trend_status in SUPPRESS_SELL_ON_TRENDS
+    )
+
     loss_tier = None
-    if dist_from_peak_pct <= ts["forced_pct"]:
+    if late_exit:
+        loss_tier = "late_exit"
+    elif dist_from_peak_pct <= ts["forced_pct"]:
         loss_tier = "3rd_forced"
     elif dist_from_peak_pct <= ts["alert_pct"]:
         loss_tier = "2nd_alert"
     elif dist_from_peak_pct <= ts["watch_pct"]:
         loss_tier = "1st_watch"
-
-    tb = cfg["trailing_buy"]
-    buy_tier = None
-    if dist_from_trough_pct >= tb["add_pct"]:
-        buy_tier = "3rd_add"
-    elif dist_from_trough_pct >= tb["alert_pct"]:
-        buy_tier = "2nd_alert"
-    elif dist_from_trough_pct >= tb["watch_pct"]:
-        buy_tier = "1st_watch"
 
     confirms_buy = []
     if vol_ratio >= VOLUME_SURGE_THRESHOLD:
@@ -209,11 +242,17 @@ def compute_signals(df: pd.DataFrame, ticker: str) -> Dict:
         "last_close": last_close,
         "last_close_date": last_close_date,
         "peak": peak,
-        "peak_date": peak_date,
-        "trough": trough,
-        "trough_date": trough_date,
+        "peak_date": pt["peak_40d_date"],
+        "trough": trough_40d,            # 호환성: 기존 코드가 trough를 참조
+        "trough_date": pt["trough_40d_date"],
+        "trough_40d": trough_40d,
+        "trough_40d_date": pt["trough_40d_date"],
+        "trough_20d": trough_20d,
+        "trough_20d_date": pt["trough_20d_date"],
         "dist_from_peak_pct": dist_from_peak_pct,
-        "dist_from_trough_pct": dist_from_trough_pct,
+        "dist_from_trough_pct": dist_from_trough_40d_pct,    # 호환성
+        "dist_from_trough_40d_pct": dist_from_trough_40d_pct,
+        "dist_from_trough_20d_pct": dist_from_trough_20d_pct,
         "loss_tier": loss_tier,
         "buy_tier": buy_tier,
         "vol_ratio": vol_ratio,
@@ -226,9 +265,9 @@ def compute_signals(df: pd.DataFrame, ticker: str) -> Dict:
             "stop_watch": peak * (1 + ts["watch_pct"]/100),
             "stop_alert": peak * (1 + ts["alert_pct"]/100),
             "stop_forced": peak * (1 + ts["forced_pct"]/100),
-            "buy_watch": trough * (1 + tb["watch_pct"]/100),
-            "buy_alert": trough * (1 + tb["alert_pct"]/100),
-            "buy_add": trough * (1 + tb["add_pct"]/100),
+            "buy_watch": trough_40d * (1 + tb["watch_pct"]/100),
+            "buy_alert": trough_40d * (1 + tb["alert_pct"]/100),
+            "buy_add": trough_40d * (1 + tb["add_pct"]/100),
         },
     }
 
@@ -236,7 +275,7 @@ def compute_signals(df: pd.DataFrame, ticker: str) -> Dict:
 def analyze_ticker(ticker: str) -> Dict:
     df = fetch_data(ticker)
     trend = classify_trend(df, ticker)
-    signals = compute_signals(df, ticker)
+    signals = compute_signals(df, ticker, trend)
     signals["trend"] = trend
 
     last_dt = df.index[-1].to_pydatetime()

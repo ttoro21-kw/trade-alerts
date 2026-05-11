@@ -2,19 +2,16 @@ name: Daily Report (3x per day PT)
 
 on:
   schedule:
-    # 8 AM PT — PDT: 15:00 UTC,  PST: 16:00 UTC
     - cron: '0 15 * * 1-5'
     - cron: '0 16 * * 1-5'
-    # 11 AM PT — PDT: 18:00 UTC,  PST: 19:00 UTC
     - cron: '0 18 * * 1-5'
     - cron: '0 19 * * 1-5'
-    # 1:30 PM PT — PDT: 20:30 UTC,  PST: 21:30 UTC
     - cron: '30 20 * * 1-5'
     - cron: '30 21 * * 1-5'
   workflow_dispatch:
     inputs:
       force_run:
-        description: '시간 게이트 무시하고 강제 발송 (테스트용)'
+        description: 'Force run ignoring time gate (for testing)'
         type: boolean
         default: false
 

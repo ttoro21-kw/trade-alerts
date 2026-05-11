@@ -129,7 +129,7 @@ def render_intraday_alert(analysis: Dict, signal_type: str) -> Tuple[str, str]:
     return subject, html
 
 
-def render_daily_report(analyses: List[Dict], status_changes: Dict) -> Tuple[str, str]:
+def render_daily_report(analyses: List[Dict], status_changes: Dict, window_label: str = "") -> Tuple[str, str]:
     today = datetime.now().strftime("%Y-%m-%d")
 
     ref_close_date = ""
@@ -220,9 +220,24 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict) -> Tuple[str
   <td style="padding:4px 8px;border-bottom:1px solid #eee;color:#27ae60;"><b>${t['buy_add']:.2f}</b><br><span style='font-size:10px;color:#888;'>{bd_pct:+.1f}%</span></td>
 </tr>""")
 
-    subject = f"[일일 리포트] {today} — 6 종목 추세/신호"
+    # window_label 에서 시간대 prefix 추출
+    window_short = ""
+    if "장초반" in window_label:
+        window_short = "장초반"
+    elif "장중후반" in window_label:
+        window_short = "장중후반"
+    elif "장후" in window_label:
+        window_short = "장후"
+    elif window_label:
+        window_short = "수시"
+
+    subject_prefix = f"[일일 리포트{' ' + window_short if window_short else ''}]"
+    subject = f"{subject_prefix} {today} — 6 종목 추세/신호"
+
+    header_window_label = f'<span style="color:#3498db;font-size:14px;"> — {window_label}</span>' if window_label else ''
+
     html = f"""<html><body style="font-family:-apple-system,sans-serif; max-width:760px;">
-<h2 style="margin-bottom:4px;">일일 추세/신호 리포트</h2>
+<h2 style="margin-bottom:4px;">일일 추세/신호 리포트{header_window_label}</h2>
 <p style="color:#666; margin-top:0;">발송일 {today} · 데이터 기준일 <b>{ref_close_date}</b> 종가</p>
 {stale_banner}
 

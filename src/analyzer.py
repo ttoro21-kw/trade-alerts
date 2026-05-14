@@ -1,6 +1,7 @@
 """Core analysis: 추세 분류 + signal tier computation.
 
 시나리오 C: 두 lookback 저점 모두 계산. 단계는 40일 기준.
+ADX 7일 변화 추적 추가.
 """
 
 from datetime import datetime, timedelta
@@ -27,6 +28,8 @@ from thresholds import (
 
 PT = ZoneInfo("America/Los_Angeles")
 ET = ZoneInfo("America/New_York")
+
+ADX_CHANGE_LOOKBACK_DAYS = 7  # ADX 변화량 측정 기간
 
 
 def fetch_data(ticker: str, period: str = "6mo", interval: str = "1d") -> pd.DataFrame:
@@ -96,6 +99,14 @@ def classify_trend(df: pd.DataFrame, ticker: str) -> Dict:
     plus_di_now = float(plus_di.iloc[-1]) if not pd.isna(plus_di.iloc[-1]) else 0.0
     minus_di_now = float(minus_di.iloc[-1]) if not pd.isna(minus_di.iloc[-1]) else 0.0
 
+    # ADX 7일 전 값
+    adx_7d_ago = None
+    if len(adx.dropna()) > ADX_CHANGE_LOOKBACK_DAYS:
+        val = adx.iloc[-(ADX_CHANGE_LOOKBACK_DAYS + 1)]
+        if not pd.isna(val):
+            adx_7d_ago = float(val)
+    adx_change_7d = (adx_now - adx_7d_ago) if adx_7d_ago is not None else None
+
     high_60d = recent.max()
     low_60d = recent.min()
     band_pct = (high_60d - low_60d) / low_60d * 100
@@ -132,6 +143,8 @@ def classify_trend(df: pd.DataFrame, ticker: str) -> Dict:
         "slope1_weekly_pct": float(slope1_weekly),
         "slope2_weekly_pct": float(slope2_weekly),
         "adx": adx_now,
+        "adx_7d_ago": adx_7d_ago,
+        "adx_change_7d": adx_change_7d,
         "plus_di": plus_di_now,
         "minus_di": minus_di_now,
         "band_pct": float(band_pct),
@@ -187,7 +200,6 @@ def compute_signals(df: pd.DataFrame, ticker: str, trend: Dict) -> Dict:
     tb = cfg["trailing_buy"]
     trend_status = trend.get("status", "")
 
-    # 옵션 C' + C'' 적용
     late_entry = (
         dist_from_trough_40d_pct > tb["add_pct"] * LATE_ENTRY_MULTIPLIER
         or trend_status in SUPPRESS_BUY_ON_TRENDS
@@ -203,7 +215,7 @@ def compute_signals(df: pd.DataFrame, ticker: str, trend: Dict) -> Dict:
     elif dist_from_trough_40d_pct >= tb["watch_pct"]:
         buy_tier = "1st_watch"
 
-    # 손절 단계 결정 — 40일 고점 기준 + 옵션 C' + C''
+    # 손절 단계 결정 — 40일 고점 기준
     ts = cfg["trailing_stop"]
     late_exit = (
         dist_from_peak_pct < ts["forced_pct"] * LATE_EXIT_MULTIPLIER
@@ -243,14 +255,14 @@ def compute_signals(df: pd.DataFrame, ticker: str, trend: Dict) -> Dict:
         "last_close_date": last_close_date,
         "peak": peak,
         "peak_date": pt["peak_40d_date"],
-        "trough": trough_40d,            # 호환성: 기존 코드가 trough를 참조
+        "trough": trough_40d,
         "trough_date": pt["trough_40d_date"],
         "trough_40d": trough_40d,
         "trough_40d_date": pt["trough_40d_date"],
         "trough_20d": trough_20d,
         "trough_20d_date": pt["trough_20d_date"],
         "dist_from_peak_pct": dist_from_peak_pct,
-        "dist_from_trough_pct": dist_from_trough_40d_pct,    # 호환성
+        "dist_from_trough_pct": dist_from_trough_40d_pct,
         "dist_from_trough_40d_pct": dist_from_trough_40d_pct,
         "dist_from_trough_20d_pct": dist_from_trough_20d_pct,
         "loss_tier": loss_tier,

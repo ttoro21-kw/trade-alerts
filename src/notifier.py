@@ -41,6 +41,44 @@ BUY_TIER_LABEL = {
 }
 
 
+def format_adx_change(adx_now, adx_change_7d):
+    """ADX 값 + 7일 변화량 + 화살표 + 색상 HTML 생성."""
+    if adx_now is None or adx_now == 0:
+        return "<span style='color:#888;'>—</span>"
+
+    adx_str = f"<b>{adx_now:.1f}</b>"
+    if adx_change_7d is None:
+        change_str = "<span style='font-size:10px;color:#888;'>(7d 데이터 부족)</span>"
+    else:
+        ch = adx_change_7d
+        if ch >= 3.0:
+            arrow = "↗"
+            color = "#c0392b"
+            suffix = " 🔴"
+        elif ch >= 1.0:
+            arrow = "↗"
+            color = "#e67e22"
+            suffix = ""
+        elif ch > -1.0:
+            arrow = "→"
+            color = "#666"
+            suffix = ""
+        elif ch > -3.0:
+            arrow = "↘"
+            color = "#16a085"
+            suffix = ""
+        else:
+            arrow = "↘"
+            color = "#2980b9"
+            suffix = " 🔵"
+        sign = "+" if ch >= 0 else ""
+        change_str = (
+            f"<span style='font-size:11px;color:{color};'>"
+            f"{arrow} {sign}{ch:.1f}{suffix}</span>"
+        )
+    return f"{adx_str}<br>{change_str}"
+
+
 def send_email(subject: str, html_body: str, plain_body: str = ""):
     sender = os.environ["GMAIL_USER"]
     password = os.environ["GMAIL_APP_PASSWORD"]
@@ -192,6 +230,10 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict, window_label
             vol_color = "#666"
             vol_emoji = ""
 
+        adx_now = trend.get("adx", 0)
+        adx_change_7d = trend.get("adx_change_7d")
+        adx_cell = format_adx_change(adx_now, adx_change_7d)
+
         rows.append(f"""
 <tr>
   <td style="padding:6px 8px;border-bottom:1px solid #eee;"><b>{ticker}</b></td>
@@ -203,7 +245,7 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict, window_label
   <td style="padding:6px 8px;border-bottom:1px solid #eee;">{loss_label}</td>
   <td style="padding:6px 8px;border-bottom:1px solid #eee;">{buy_label}</td>
   <td style="padding:6px 8px;border-bottom:1px solid #eee;color:{vol_color};"><b>{vol_ratio:.2f}×</b> {vol_emoji}</td>
-  <td style="padding:6px 8px;border-bottom:1px solid #eee;">{trend.get('adx', 0):.1f}</td>
+  <td style="padding:6px 8px;border-bottom:1px solid #eee;">{adx_cell}</td>
 </tr>""")
 
     threshold_rows = []
@@ -228,7 +270,7 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict, window_label
   <td style="padding:4px 8px;border-bottom:1px solid #eee;color:#27ae60;"><b>${t['buy_add']:.2f}</b><br><span style='font-size:10px;color:#888;'>{bd_pct:+.1f}%</span></td>
 </tr>""")
 
-    # window_label 에서 시간대 prefix 추출
+    # window_label 시간대 prefix 추출
     window_short = ""
     if "장초반" in window_label:
         window_short = "장초반"
@@ -240,11 +282,11 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict, window_label
         window_short = "수시"
 
     subject_prefix = f"[일일 리포트{' ' + window_short if window_short else ''}]"
-    subject = f"{subject_prefix} {today} — 6 종목 추세/신호"
+    subject = f"{subject_prefix} {today} — {len(analyses)} 종목 추세/신호"
 
     header_window_label = f'<span style="color:#3498db;font-size:14px;"> — {window_label}</span>' if window_label else ''
 
-    html = f"""<html><body style="font-family:-apple-system,sans-serif; max-width:880px;">
+    html = f"""<html><body style="font-family:-apple-system,sans-serif; max-width:900px;">
 <h2 style="margin-bottom:4px;">일일 추세/신호 리포트{header_window_label}</h2>
 <p style="color:#666; margin-top:0;">발송일 {today} · 데이터 기준일 <b>{ref_close_date}</b> 종가</p>
 {stale_banner}
@@ -261,7 +303,7 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict, window_label
   <th style="padding:8px;text-align:left;">손절 단계</th>
   <th style="padding:8px;text-align:left;">매수 단계</th>
   <th style="padding:8px;text-align:left;">거래량<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>(5d/20d)</span></th>
-  <th style="padding:8px;text-align:left;">ADX</th>
+  <th style="padding:8px;text-align:left;">ADX<br><span style='font-size:9px;font-weight:normal;color:#bbb;'>변화 (7d)</span></th>
 </tr>
 </thead>
 <tbody>
@@ -291,9 +333,18 @@ def render_daily_report(analyses: List[Dict], status_changes: Dict, window_label
 <b>표 해석 가이드</b><br>
 - <b>저점 (40일)</b>: 시장 사이클 전체 관점 — 매수/손절 <b>단계 결정 기준</b><br>
 - <b>저점 (20일)</b>: 최근 swing 관점 — 단기 진입 기회 <b>참고용</b> (단계에 영향 X)<br>
-- <b>⚫ 진입 늦음</b>: 40일 저점 대비 이미 너무 올랐거나 (×{2}) rising 추세 진입 → 신규 매수 부적합<br>
+- <b>⚫ 진입 늦음</b>: 40일 저점 대비 이미 너무 올랐거나 rising 추세 진입 → 신규 매수 부적합<br>
 - <b>⚫ 매도 늦음</b>: 40일 고점 대비 이미 너무 떨어졌거나 falling 추세 진입 → 손절 의미 약함<br>
 - 20일 저점 대비 거리%가 작으면 단기 swing trader는 추가 진입 검토 가능
+</div>
+
+<div style="background:#fef9e7;border-left:4px solid #f39c12;padding:10px 14px;margin-top:12px;font-size:12px;color:#2c3e50;">
+<b>ADX 변화 (7일) 해석</b><br>
+- 🔴 <b>+3.0 이상</b>: 추세 빠르게 강화 — 과열 주의, mean reversion 압력 증가<br>
+- <span style="color:#e67e22;">↗ +1.0~+3.0</span>: 추세 점진적 강화 (정상)<br>
+- <span style="color:#666;">→ ±1.0 이내</span>: 변화 미미 (현 상태 유지)<br>
+- <span style="color:#16a085;">↘ -1.0~-3.0</span>: 추세 점진적 약화 (반전 신호 형성 가능)<br>
+- 🔵 <b>-3.0 이하</b>: 추세 빠르게 약화 — 반전 임박 가능성, 진입/이탈 신중
 </div>
 
 <p style="color:#888;font-size:11px;margin-top:16px;">

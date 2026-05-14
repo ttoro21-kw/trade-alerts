@@ -99,6 +99,54 @@ TICKER_CONFIG = {
         },
         "atr_multiplier": 3.0,
     },
+    "MU": {
+        "category": "high_vol_large_cap",
+        "ma20_slope_threshold_weekly_pct": 1.3,
+        "consolidation_band_pct": 10.0,
+        "trailing_stop": {
+            "watch_pct": -7.0,
+            "alert_pct": -10.0,
+            "forced_pct": -14.0,
+        },
+        "trailing_buy": {
+            "watch_pct": 4.0,
+            "alert_pct": 6.0,
+            "add_pct": 10.0,
+        },
+        "atr_multiplier": 3.0,
+    },
+    "PLTR": {
+        "category": "high_vol_large_cap",
+        "ma20_slope_threshold_weekly_pct": 1.8,
+        "consolidation_band_pct": 13.0,
+        "trailing_stop": {
+            "watch_pct": -8.0,
+            "alert_pct": -12.0,
+            "forced_pct": -17.0,
+        },
+        "trailing_buy": {
+            "watch_pct": 5.0,
+            "alert_pct": 8.0,
+            "add_pct": 12.0,
+        },
+        "atr_multiplier": 3.0,
+    },
+    "DRAM": {
+        "category": "high_vol_etf",
+        "ma20_slope_threshold_weekly_pct": 2.0,
+        "consolidation_band_pct": 14.0,
+        "trailing_stop": {
+            "watch_pct": -8.0,
+            "alert_pct": -12.0,
+            "forced_pct": -17.0,
+        },
+        "trailing_buy": {
+            "watch_pct": 5.0,
+            "alert_pct": 8.0,
+            "add_pct": 12.0,
+        },
+        "atr_multiplier": 3.0,
+    },
 }
 
 # 공통 lookback 윈도우

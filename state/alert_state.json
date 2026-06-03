@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-06-03T07:17:06.887619-07:00",
+  "last_run": "2026-06-03T08:00:36.185188-07:00",
   "alerts_sent": {},
   "last_status": {
     "ASML": "weak_rising",
@@ -9,7 +9,7 @@
     "TQQQ": "rising",
     "SOXL": "rising",
     "MU": "rising",
-    "PLTR": "sideways",
+    "PLTR": "weak_rising",
     "DRAM": "rising"
   }
 }

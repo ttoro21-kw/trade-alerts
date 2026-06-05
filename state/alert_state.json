@@ -1,6 +1,27 @@
 {
-  "last_run": "2026-06-05T11:00:31.300183-07:00",
-  "alerts_sent": {},
+  "last_run": "2026-06-05T12:22:57.906643-07:00",
+  "alerts_sent": {
+    "2026-06-05": {
+      "NVDA": [
+        "2nd_alert_loss"
+      ],
+      "TQQQ": [
+        "2nd_alert_loss"
+      ],
+      "SOXL": [
+        "3rd_forced"
+      ],
+      "MU": [
+        "3rd_forced"
+      ],
+      "PLTR": [
+        "2nd_alert_loss"
+      ],
+      "DRAM": [
+        "3rd_forced"
+      ]
+    }
+  },
   "last_status": {
     "ASML": "weak_rising",
     "AMAT": "weak_rising",

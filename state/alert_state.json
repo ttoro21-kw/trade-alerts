@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-06-17T11:00:45.284625-07:00",
+  "last_run": "2026-06-17T12:12:33.557887-07:00",
   "alerts_sent": {
     "2026-06-05": {
       "NVDA": [
@@ -106,7 +106,8 @@
         "2nd_alert_loss"
       ],
       "PLTR": [
-        "2nd_alert_loss"
+        "2nd_alert_loss",
+        "3rd_forced"
       ]
     }
   },

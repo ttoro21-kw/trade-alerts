@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-06-29T08:00:42.238341-07:00",
+  "last_run": "2026-06-29T09:38:43.777679-07:00",
   "alerts_sent": {
     "2026-06-16": {
       "PLTR": [
@@ -65,6 +65,20 @@
         "3rd_add"
       ],
       "SOXL": [
+        "2nd_alert_loss"
+      ]
+    },
+    "2026-06-29": {
+      "NVDA": [
+        "3rd_forced"
+      ],
+      "TQQQ": [
+        "3rd_add"
+      ],
+      "SOXL": [
+        "2nd_alert_loss"
+      ],
+      "DRAM": [
         "2nd_alert_loss"
       ]
     }

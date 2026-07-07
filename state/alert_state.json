@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-07-07T08:01:11.447881-07:00",
+  "last_run": "2026-07-07T08:43:48.134983-07:00",
   "alerts_sent": {
     "2026-06-24": {
       "NVDA": [
@@ -150,6 +150,29 @@
       ],
       "PLTR": [
         "3rd_add"
+      ]
+    },
+    "2026-07-07": {
+      "ASML": [
+        "3rd_forced"
+      ],
+      "AMAT": [
+        "3rd_forced"
+      ],
+      "LRCX": [
+        "3rd_forced"
+      ],
+      "NVDA": [
+        "3rd_forced"
+      ],
+      "TQQQ": [
+        "2nd_alert_loss"
+      ],
+      "MU": [
+        "3rd_forced"
+      ],
+      "DRAM": [
+        "3rd_forced"
       ]
     }
   },

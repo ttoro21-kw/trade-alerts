@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-07-20T08:00:44.531916-07:00",
+  "last_run": "2026-07-20T08:12:10.795262-07:00",
   "alerts_sent": {
     "2026-07-07": {
       "ASML": [
@@ -233,6 +233,28 @@
         "3rd_forced"
       ],
       "LRCX": [
+        "3rd_add"
+      ],
+      "DRAM": [
+        "3rd_forced"
+      ]
+    },
+    "2026-07-20": {
+      "ASML": [
+        "3rd_add"
+      ],
+      "TQQQ": [
+        "3rd_forced"
+      ],
+      "SOXL": [
+        "3rd_forced"
+      ],
+      "MU": [
+        "3rd_forced",
+        "3rd_add"
+      ],
+      "PLTR": [
+        "3rd_forced",
         "3rd_add"
       ],
       "DRAM": [

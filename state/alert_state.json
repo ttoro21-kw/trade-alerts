@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-07-22T08:04:46.667345-07:00",
+  "last_run": "2026-07-22T09:41:35.910744-07:00",
   "alerts_sent": {
     "2026-07-09": {
       "AMAT": [
@@ -246,13 +246,15 @@
         "3rd_add"
       ],
       "NVDA": [
-        "2nd_alert_buy"
+        "2nd_alert_buy",
+        "3rd_add"
       ],
       "TQQQ": [
         "2nd_alert_loss"
       ],
       "SOXL": [
-        "3rd_forced"
+        "3rd_forced",
+        "3rd_add"
       ],
       "MU": [
         "3rd_forced",

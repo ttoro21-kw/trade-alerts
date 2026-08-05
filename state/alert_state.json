@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-08-05T08:00:31.532775-07:00",
+  "last_run": "2026-08-05T08:13:57.722890-07:00",
   "alerts_sent": {
     "2026-07-23": {
       "ASML": [
@@ -201,6 +201,31 @@
       ],
       "NVDA": [
         "2nd_alert_buy",
+        "3rd_add"
+      ],
+      "TQQQ": [
+        "3rd_add"
+      ],
+      "SOXL": [
+        "3rd_forced"
+      ],
+      "MU": [
+        "3rd_forced"
+      ],
+      "DRAM": [
+        "3rd_forced",
+        "3rd_add"
+      ]
+    },
+    "2026-08-05": {
+      "ASML": [
+        "3rd_forced",
+        "3rd_add"
+      ],
+      "AMAT": [
+        "3rd_forced"
+      ],
+      "NVDA": [
         "3rd_add"
       ],
       "TQQQ": [

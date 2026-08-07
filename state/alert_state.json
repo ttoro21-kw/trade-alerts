@@ -1,32 +1,6 @@
 {
-  "last_run": "2026-08-06T08:14:00.421934-07:00",
+  "last_run": "2026-08-07T07:13:06.286729-07:00",
   "alerts_sent": {
-    "2026-07-24": {
-      "ASML": [
-        "2nd_alert_loss",
-        "3rd_add",
-        "3rd_forced"
-      ],
-      "NVDA": [
-        "2nd_alert_buy"
-      ],
-      "TQQQ": [
-        "3rd_forced"
-      ],
-      "SOXL": [
-        "3rd_forced"
-      ],
-      "MU": [
-        "3rd_forced",
-        "3rd_add"
-      ],
-      "PLTR": [
-        "3rd_forced"
-      ],
-      "DRAM": [
-        "3rd_forced"
-      ]
-    },
     "2026-07-27": {
       "ASML": [
         "3rd_forced"
@@ -234,6 +208,24 @@
         "3rd_forced"
       ],
       "DRAM": [
+        "3rd_add"
+      ]
+    },
+    "2026-08-07": {
+      "ASML": [
+        "3rd_forced",
+        "3rd_add"
+      ],
+      "NVDA": [
+        "3rd_add"
+      ],
+      "TQQQ": [
+        "3rd_add"
+      ],
+      "SOXL": [
+        "3rd_forced"
+      ],
+      "MU": [
         "3rd_add"
       ]
     }

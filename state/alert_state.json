@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-08-18T07:17:31.652059-07:00",
+  "last_run": "2026-08-18T07:56:28.466288-07:00",
   "alerts_sent": {
     "2026-08-05": {
       "ASML": [
@@ -225,7 +225,8 @@
         "3rd_forced"
       ],
       "DRAM": [
-        "3rd_forced"
+        "3rd_forced",
+        "3rd_add"
       ],
       "ASML": [
         "3rd_add"

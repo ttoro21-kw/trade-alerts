@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-08-18T06:42:42.398801-07:00",
+  "last_run": "2026-08-18T07:17:31.652059-07:00",
   "alerts_sent": {
     "2026-08-05": {
       "ASML": [
@@ -218,13 +218,17 @@
         "3rd_add"
       ],
       "SOXL": [
-        "3rd_forced"
+        "3rd_forced",
+        "3rd_add"
       ],
       "MU": [
         "3rd_forced"
       ],
       "DRAM": [
         "3rd_forced"
+      ],
+      "ASML": [
+        "3rd_add"
       ]
     }
   },

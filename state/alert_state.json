@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-08-19T07:57:19.183436-07:00",
+  "last_run": "2026-08-19T08:00:27.193642-07:00",
   "alerts_sent": {
     "2026-08-06": {
       "ASML": [
@@ -234,7 +234,7 @@
     }
   },
   "last_status": {
-    "ASML": "rise_then_fall",
+    "ASML": "weak_rising",
     "AMAT": "rise_then_fall",
     "LRCX": "rise_then_fall",
     "NVDA": "fall_then_rise",

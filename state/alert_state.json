@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-08-24T07:42:54.908846-07:00",
+  "last_run": "2026-08-24T08:00:32.913172-07:00",
   "alerts_sent": {
     "2026-08-11": {
       "NVDA": [
@@ -225,11 +225,11 @@
     }
   },
   "last_status": {
-    "ASML": "weak_rising",
+    "ASML": "sideways",
     "AMAT": "rise_then_fall",
     "LRCX": "rise_then_fall",
     "NVDA": "fall_then_rise",
-    "TQQQ": "weak_rising",
+    "TQQQ": "fall_then_rise",
     "SOXL": "weak_falling",
     "MU": "weak_rising",
     "PLTR": "fall_then_rise",

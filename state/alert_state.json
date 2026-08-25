@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-08-25T07:46:26.554488-07:00",
+  "last_run": "2026-08-25T08:00:31.763998-07:00",
   "alerts_sent": {
     "2026-08-12": {
       "AMAT": [
@@ -232,14 +232,14 @@
     }
   },
   "last_status": {
-    "ASML": "sideways",
+    "ASML": "weak_rising",
     "AMAT": "rise_then_fall",
-    "LRCX": "rise_then_fall",
+    "LRCX": "weak_rising",
     "NVDA": "fall_then_rise",
     "TQQQ": "fall_then_rise",
     "SOXL": "weak_falling",
     "MU": "weak_rising",
     "PLTR": "fall_then_rise",
-    "DRAM": "rise_then_fall"
+    "DRAM": "sideways"
   }
 }

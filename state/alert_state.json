@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-08-28T08:00:34.136020-07:00",
+  "last_run": "2026-08-28T11:00:30.878627-07:00",
   "alerts_sent": {
     "2026-08-17": {
       "LRCX": [
@@ -194,7 +194,7 @@
     "LRCX": "weak_rising",
     "NVDA": "fall_then_rise",
     "TQQQ": "fall_then_rise",
-    "SOXL": "sideways",
+    "SOXL": "weak_falling",
     "MU": "fall_then_rise",
     "PLTR": "fall_then_rise",
     "DRAM": "fall_then_rise"

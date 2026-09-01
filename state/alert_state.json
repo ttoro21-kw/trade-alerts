@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-09-01T08:00:36.842153-07:00",
+  "last_run": "2026-09-01T10:12:05.831981-07:00",
   "alerts_sent": {
     "2026-08-19": {
       "AMAT": [
@@ -161,6 +161,28 @@
       ],
       "DRAM": [
         "2nd_alert_loss"
+      ]
+    },
+    "2026-09-01": {
+      "ASML": [
+        "2nd_alert_loss"
+      ],
+      "LRCX": [
+        "3rd_forced",
+        "3rd_add"
+      ],
+      "NVDA": [
+        "3rd_add"
+      ],
+      "TQQQ": [
+        "3rd_add"
+      ],
+      "SOXL": [
+        "3rd_forced"
+      ],
+      "DRAM": [
+        "2nd_alert_loss",
+        "3rd_add"
       ]
     }
   },

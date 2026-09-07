@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-09-07T11:00:32.638235-07:00",
+  "last_run": "2026-09-07T11:08:14.778849-07:00",
   "alerts_sent": {
     "2026-08-25": {
       "ASML": [
@@ -129,6 +129,21 @@
       ]
     },
     "2026-09-04": {
+      "ASML": [
+        "2nd_alert_loss",
+        "3rd_add"
+      ],
+      "LRCX": [
+        "2nd_alert_loss"
+      ],
+      "TQQQ": [
+        "3rd_add"
+      ],
+      "SOXL": [
+        "3rd_add"
+      ]
+    },
+    "2026-09-07": {
       "ASML": [
         "2nd_alert_loss",
         "3rd_add"

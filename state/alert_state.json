@@ -1,5 +1,5 @@
 {
-  "last_run": "2026-10-16T08:00:32.738965-07:00",
+  "last_run": "2026-10-16T10:11:41.431225-07:00",
   "alerts_sent": {
     "2026-10-06": {
       "DRAM": [
@@ -77,6 +77,29 @@
         "3rd_forced"
       ],
       "MU": [
+        "3rd_forced"
+      ]
+    },
+    "2026-10-16": {
+      "ASML": [
+        "2nd_alert_loss"
+      ],
+      "AMAT": [
+        "3rd_forced"
+      ],
+      "LRCX": [
+        "3rd_forced"
+      ],
+      "TQQQ": [
+        "2nd_alert_loss"
+      ],
+      "SOXL": [
+        "3rd_forced"
+      ],
+      "MU": [
+        "3rd_forced"
+      ],
+      "DRAM": [
         "3rd_forced"
       ]
     }

@@ -1,11 +1,6 @@
 {
-  "last_run": "2026-10-21T13:30:29.857271-07:00",
+  "last_run": "2026-10-22T08:00:31.166615-07:00",
   "alerts_sent": {
-    "2026-10-08": {
-      "SOXL": [
-        "3rd_add"
-      ]
-    },
     "2026-10-09": {
       "SOXL": [
         "3rd_add"
@@ -150,13 +145,13 @@
     }
   },
   "last_status": {
-    "ASML": "sideways",
+    "ASML": "weak_falling",
     "AMAT": "fall_then_rise",
     "LRCX": "weak_falling",
     "NVDA": "sideways",
-    "TQQQ": "sideways",
-    "SOXL": "weak_falling",
-    "MU": "weak_falling",
+    "TQQQ": "weak_falling",
+    "SOXL": "falling",
+    "MU": "rise_then_fall",
     "PLTR": "rising",
     "DRAM": "rise_then_fall"
   }

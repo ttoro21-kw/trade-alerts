@@ -1,17 +1,6 @@
 {
-  "last_run": "2026-11-12T13:37:44.040637-08:00",
+  "last_run": "2026-11-13T08:00:34.356725-08:00",
   "alerts_sent": {
-    "2026-10-30": {
-      "NVDA": [
-        "3rd_forced"
-      ],
-      "MU": [
-        "3rd_forced"
-      ],
-      "DRAM": [
-        "3rd_forced"
-      ]
-    },
     "2026-11-03": {
       "NVDA": [
         "2nd_alert_loss"
@@ -129,7 +118,7 @@
     }
   },
   "last_status": {
-    "ASML": "falling",
+    "ASML": "rise_then_fall",
     "AMAT": "falling",
     "LRCX": "falling",
     "NVDA": "rise_then_fall",
